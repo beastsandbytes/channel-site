@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>All Videos</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body {font-family: system-ui, sans-serif; margin:0; line-height:1.6;}
+    header, footer {background:#111; color:#fff; padding:1rem;}
+    main {padding:1rem; max-width:1000px; margin:auto;}
+    a {color:#0070f3; text-decoration:none;}
+    .grid {display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem;}
+    .card {border:1px solid #eee; border-radius:8px; overflow:hidden;}
+    .thumb {width:100%; height:auto; display:block;}
+    .p {padding:.75rem;}
+    .meta {font-size:.9rem; color:#666;}
+  </style>
+</head>
+<body>
+  <header><h1>All Videos</h1></header>
+  <main>
+    <div id="grid" class="grid"></div>
+  </main>
+  <footer>&copy; <script>document.write(new Date().getFullYear())</script></footer>
+
+  <script>
+    async function load() {
+      const res = await fetch('/data/videos.json', {cache: 'no-store'});
+      const db = await res.json();
+      const videos = db.videos
+        .slice()
+        .sort((a,b) => new Date(b.published) - new Date(a.published));
+      const grid = document.getElementById('grid');
+      grid.innerHTML = videos.map(v => {
+        const date = new Date(v.published);
+        const thumb = `https://img.youtube.com/vi/${v.id}/hqdefault.jpg`;
+        return `
+          <article class="card">
+            <a href="${v.url}" target="_blank" rel="noopener">
+              <img class="thumb" src="${thumb}" alt="${v.title}">
+            </a>
+            <div class="p">
+              <h3><a href="${v.url}" target="_blank" rel="noopener">${v.title}</a></h3>
+              <p class="meta">${date.toLocaleDateString()}</p>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+    load();
+  </script>
+</body>
+</html>
