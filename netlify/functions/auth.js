@@ -64,13 +64,20 @@ exports.handler = async (event) => {
 <script>
   (function() {
     function send() {
-      var payload = 'authorization:github:success:' + JSON.stringify({token: '${token}'});
-      if (window.opener) {
-        window.opener.postMessage(payload, '${safeOrigin}');
-        window.close();
-      } else {
-        document.body.innerText = 'Login successful. You can close this window.';
-      }
+var payload = 'authorization:github:success:' + JSON.stringify({token: '${token}'});
+// TEMP: send to any origin to debug origin mismatches
+try {
+  if (window.opener) {
+    window.opener.postMessage(payload, '*');
+    // small delay so we see something if it fails to close
+    setTimeout(() => window.close(), 250);
+  } else {
+    document.body.innerText = 'Login successful. You can close this window.';
+  }
+} catch (e) {
+  document.body.innerText = 'PostMessage error: ' + (e && e.message ? e.message : e);
+}
+
     }
     send();
   })();
