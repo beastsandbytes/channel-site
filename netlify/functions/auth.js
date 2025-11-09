@@ -1,4 +1,5 @@
 // Minimal GitHub OAuth for Decap CMS on Netlify Functions (no external deps)
+// Full debug version for testing token exchange and message passing
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || "https://beasts-and-bytes-00.netlify.app";
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
@@ -17,14 +18,12 @@ function html(body) {
 
 exports.handler = async (event) => {
   const url = new URL(event.rawUrl);
-  const path = url.pathname; // /.netlify/functions/auth
-  const isCallback = url.pathname.endsWith("/auth") && url.searchParams.get("callback") === "1";
+  const path = url.pathname;
   const code = url.searchParams.get("code");
-  const state = url.searchParams.get("state");
   const redirectUri = `${SITE_ORIGIN}/api/auth/callback`;
 
   // 1) Start OAuth -> redirect to GitHub
-  if (url.pathname.endsWith("/auth") && !isCallback) {
+  if (path.endsWith("/auth") && !path.endsWith("/auth/callback")) {
     const authURL = new URL(GITHUB_AUTH);
     authURL.searchParams.set("client_id", CLIENT_ID);
     authURL.searchParams.set("redirect_uri", redirectUri);
@@ -37,13 +36,17 @@ exports.handler = async (event) => {
   }
 
   // 2) Callback -> exchange code for token
-  if (isCallback || url.pathname.endsWith("/auth/callback")) {
+  if (path.endsWith("/auth/callback")) {
     if (!code) {
-      return html(`<p>Missing OAuth code.</p>`);
+      return html("<p>Missing OAuth code.</p>");
     }
+
     const res = await fetch(GITHUB_TOKEN, {
       method: "POST",
-      headers: { "Accept": "application/json", "Content-Type": "application/json" },
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         client_id: CLIENT_ID,
         client_secret: CLIENT_SECRET,
@@ -51,15 +54,15 @@ exports.handler = async (event) => {
         redirect_uri: redirectUri
       })
     });
+
     const data = await res.json();
+
     if (!data.access_token) {
       return html(`<p>OAuth Error: ${JSON.stringify(data)}</p>`);
     }
 
-    // 3) Hand token back to Decap CMS (postMessage to opener)
-    const safeOrigin = SITE_ORIGIN;
-    const token = data.access_token;
-return html(`<!doctype html>
+    // 3) Debug version – display token and manual send buttons
+    return html(`<!doctype html>
 <html><body>
   <h3>GitHub OAuth success</h3>
   <p><strong>Origin detected:</strong> ${SITE_ORIGIN}</p>
@@ -72,7 +75,6 @@ return html(`<!doctype html>
 <script>
   (function() {
     var payload = 'authorization:github:success:' + JSON.stringify({ token: '${data.access_token}' });
-
     function log(msg){ 
       var el = document.getElementById('log'); 
       el.textContent += (msg + "\\n"); 
@@ -104,11 +106,8 @@ return html(`<!doctype html>
   })();
 </script>
 </body></html>`);
-
-</script>
-</body></html>`);
   }
 
-  // Fallback
+  // 4) Fallback – unknown route
   return { statusCode: 404, body: "Not found" };
 };
