@@ -18,12 +18,36 @@
     <h1>My YouTube Channel</h1>
   </header>
   <main>
-    <p>Welcome! Here you’ll find my latest videos and project info.</p>
-    <div class="video-grid">
-      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
-      <iframe src="https://www.youtube.com/embed/VIDEO_ID_HERE" allowfullscreen></iframe>
-    </div>
+    <p id="welcome">Loading...</p>
+    <p><a href="/videos.html">See all videos →</a></p>
+    <div class="video-grid" id="latest"></div>
   </main>
+
+  <script>
+    async function loadHome() {
+      const res = await fetch('/data/home.json', {cache: 'no-store'});
+      const home = await res.json();
+      document.getElementById('welcome').textContent = home.welcome || '';
+    }
+
+    async function loadLatest() {
+      const res = await fetch('/data/videos.json', {cache: 'no-store'});
+      const db = await res.json();
+      const videos = db.videos
+        .slice()
+        .sort((a,b) => new Date(b.published) - new Date(a.published))
+        .slice(0, 4);
+
+      const grid = document.getElementById('latest');
+      grid.innerHTML = videos.map(v => `
+        <iframe src="https://www.youtube.com/embed/${v.id}" allowfullscreen></iframe>
+      `).join('');
+    }
+
+    loadHome();
+    loadLatest();
+  </script>
+
   <footer>
     &copy; <script>document.write(new Date().getFullYear())</script> My Channel
   </footer>
