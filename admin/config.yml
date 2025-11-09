@@ -1,0 +1,38 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+collections:
+  - name: "videos"
+    label: "Videos"
+    label_singular: "Video"
+    format: "json"
+    editor:
+      preview: false
+    files:
+      - name: "videos_db"
+        label: "Videos Database"
+        file: "data/videos.json"
+        fields:
+          - label: "Videos"
+            name: "videos"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "YouTube ID", name: "id", widget: "string", hint: "The part after v= in the URL" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Published (UTC)", name: "published", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ss[Z]" }
+              - { label: "URL", name: "url", widget: "string", hint: "Full https://www.youtube.com/watch?v=ID" }
+
+  - name: "pages"
+    label: "Pages"
+    files:
+      - name: "home"
+        label: "Home Text"
+        file: "data/home.json"
+        format: "json"
+        fields:
+          - { label: "Welcome Text", name: "welcome", widget: "text", hint: "Short intro shown on the homepage" }
