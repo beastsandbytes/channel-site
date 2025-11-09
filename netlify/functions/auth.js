@@ -59,28 +59,52 @@ exports.handler = async (event) => {
     // 3) Hand token back to Decap CMS (postMessage to opener)
     const safeOrigin = SITE_ORIGIN;
     const token = data.access_token;
-    return html(`<!doctype html>
+return html(`<!doctype html>
 <html><body>
+  <h3>GitHub OAuth success</h3>
+  <p><strong>Origin detected:</strong> ${SITE_ORIGIN}</p>
+  <p><strong>Token (first 6 chars):</strong> ${data.access_token.slice(0,6)}…</p>
+  <p>This page won't auto-close. Use the buttons below to send the token to the opener (Decap CMS).</p>
+  <button id="send-exact">Send to opener (exact origin)</button>
+  <button id="send-any">Send to opener (any origin)</button>
+  <button id="close">Close window</button>
+  <pre id="log" style="background:#f6f6f6;padding:8px;border:1px solid #ddd;"></pre>
 <script>
   (function() {
-    function send() {
-var payload = 'authorization:github:success:' + JSON.stringify({token: '${token}'});
-// TEMP: send to any origin to debug origin mismatches
-try {
-  if (window.opener) {
-    window.opener.postMessage(payload, '*');
-    // small delay so we see something if it fails to close
-    setTimeout(() => window.close(), 250);
-  } else {
-    document.body.innerText = 'Login successful. You can close this window.';
-  }
-} catch (e) {
-  document.body.innerText = 'PostMessage error: ' + (e && e.message ? e.message : e);
-}
+    var payload = 'authorization:github:success:' + JSON.stringify({ token: '${data.access_token}' });
 
+    function log(msg){ 
+      var el = document.getElementById('log'); 
+      el.textContent += (msg + "\\n"); 
     }
-    send();
+
+    document.getElementById('send-exact').onclick = function() {
+      try {
+        if (window.opener) {
+          window.opener.postMessage(payload, '${SITE_ORIGIN}');
+          log('postMessage sent to ${SITE_ORIGIN}');
+        } else {
+          log('No opener window found');
+        }
+      } catch(e) { log('Error: ' + e.message); }
+    };
+
+    document.getElementById('send-any').onclick = function() {
+      try {
+        if (window.opener) {
+          window.opener.postMessage(payload, '*');
+          log('postMessage sent to *');
+        } else {
+          log('No opener window found');
+        }
+      } catch(e) { log('Error: ' + e.message); }
+    };
+
+    document.getElementById('close').onclick = function(){ window.close(); };
   })();
+</script>
+</body></html>`);
+
 </script>
 </body></html>`);
   }
