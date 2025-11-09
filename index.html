@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Channel</title>
+  <style>
+    body {font-family: system-ui, sans-serif; margin:0; line-height:1.6;}
+    header, footer {background:#111; color:#fff; padding:1rem;}
+    main {padding:1rem; max-width:800px; margin:auto;}
+    a {color:#0070f3; text-decoration:none;}
+    .video-grid {display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem;}
+    iframe {width:100%; aspect-ratio:16/9; border:0;}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>My YouTube Channel</h1>
+  </header>
+  <main>
+    <p>Welcome! Here you’ll find my latest videos and project info.</p>
+    <div class="video-grid">
+      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+      <iframe src="https://www.youtube.com/embed/VIDEO_ID_HERE" allowfullscreen></iframe>
+    </div>
+  </main>
+  <footer>
+    &copy; <script>document.write(new Date().getFullYear())</script> My Channel
+  </footer>
+</body>
+</html>
