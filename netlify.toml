@@ -1,6 +1,13 @@
 [functions]
   directory = "netlify/functions"
 
+# exact match for /api/auth
+[[redirects]]
+  from = "/api/auth"
+  to = "/.netlify/functions/auth"
+  status = 200
+
+# and any path under /api/auth/*
 [[redirects]]
   from = "/api/auth/*"
   to = "/.netlify/functions/auth"
